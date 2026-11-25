@@ -66,7 +66,7 @@ export function Transactions({ transactions, accounts, userId, search, setSearch
   return <section className="finance-panel full-section" id="transactions">
     <div className="finance-panel-head"><h2><ArrowLeftRight size={20} /> Transactions</h2><button className="button primary small" onClick={onAdd}><Plus size={16} /> Add transaction</button></div>
     <p className="finance-muted">Account balances are maintained manually. Transfers and card payments are excluded from cash flow.</p>
-    <div className="settings-actions"><button className="button secondary small" onClick={exportCsv} disabled={!filtered.length}>Export filtered CSV</button><label className="button secondary small">Import MoneyStream CSV<input className="sr-only" type="file" accept=".csv,text/csv" disabled={importing} onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ""; if (file) void importCsv(file); }} /></label></div>
+    <div className="settings-actions"><button className="button secondary small" onClick={exportCsv} disabled={!filtered.length}>Export filtered CSV</button><label className="button secondary small">{importing ? <><span className="button-spinner" aria-hidden="true" /> Importing...</> : "Import MoneyStream CSV"}<input className="sr-only" type="file" accept=".csv,text/csv" disabled={importing} onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ""; if (file) void importCsv(file); }} /></label></div>
     {csvError && <p role="alert" className="field-error">{csvError}</p>}
     {csvMessage && <p role="status" className="finance-muted">{csvMessage}</p>}
     <div className="transaction-filters">

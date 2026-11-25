@@ -68,7 +68,7 @@ export function RecordModal({ userId, accounts, record, onClose, onSave }: Props
         </>}
       </div>
       {error && <div role="alert" className="alert">{error}</div>}
-      <div className="modal-actions"><button type="button" className="button secondary" onClick={onClose}>Cancel</button><button className="button primary" disabled={saving}>{saving ? "Saving..." : "Save"}</button></div>
+      <div className="modal-actions"><button type="button" className="button secondary" onClick={onClose}>Cancel</button><button className="button primary" disabled={saving}>{saving ? <><span className="button-spinner" aria-hidden="true" /> Saving...</> : "Save"}</button></div>
     </form>
   </dialog>;
 }

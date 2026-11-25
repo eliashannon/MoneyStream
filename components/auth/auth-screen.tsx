@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowDownLeft, ArrowRight, ArrowUpRight, Check, Eye, EyeOff, Fingerprint, LockKeyhole, Moon, Sparkles, Sun } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
@@ -65,7 +64,7 @@ export function AuthScreen({ dark, toggleTheme, onSignIn }: { dark: boolean; tog
         <div className="story-footer">A clearer picture starts here. <span>✳</span></div>
       </section>
       <section className="auth-form-wrap">
-        <motion.div className="auth-form" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .35 }}>
+        <div className="auth-form">
           <div className="form-kicker">WELCOME TO MONEYSTREAM</div>
           <h2>{tab === "create" ? "Get started." : tab === "forgot" ? "Forgot password?" : "Welcome back."}</h2>
           <p className="muted">{tab === "create" ? "Create your own local space for a clearer view." : tab === "forgot" ? "This is a prototype, so there’s no email or recovery service." : "A little clarity goes a long way. Let’s get started."}</p>
@@ -76,14 +75,14 @@ export function AuthScreen({ dark, toggleTheme, onSignIn }: { dark: boolean; tog
             </div>
             <form onSubmit={handleSubmit((data) => enter(data.username, data.password, data.remember, tab === "create"))} noValidate>
               <label className="field-label" htmlFor="username">Username</label>
-              <input id="username" className="input" placeholder="Enter your username" autoComplete="username" {...register("username")} />
-              {errors.username && <p className="field-error">{errors.username.message}</p>}
+              <input id="username" className="input" placeholder="Enter your username" autoComplete="username" aria-invalid={!!errors.username} aria-describedby={errors.username ? "username-error" : undefined} {...register("username")} />
+              {errors.username && <p id="username-error" className="field-error">{errors.username.message}</p>}
               <div className="label-row"><label className="field-label" htmlFor="password">Password</label>{tab === "signin" && <button className="text-button" type="button" onClick={() => switchTab("forgot")}>Forgot password?</button>}</div>
-              <div className="password-wrap"><input id="password" className="input" type={showPassword ? "text" : "password"} placeholder="Enter your password" autoComplete={tab === "create" ? "new-password" : "current-password"} {...register("password")} /><button type="button" className="password-toggle" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword(!showPassword)}>{showPassword ? <EyeOff size={17} /> : <Eye size={17} />}</button></div>
-              {errors.password && <p className="field-error">{errors.password.message}</p>}
+              <div className="password-wrap"><input id="password" className="input" type={showPassword ? "text" : "password"} placeholder="Enter your password" autoComplete={tab === "create" ? "new-password" : "current-password"} aria-invalid={!!errors.password} aria-describedby={errors.password ? "password-error" : undefined} {...register("password")} /><button type="button" className="password-toggle" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword(!showPassword)}>{showPassword ? <EyeOff size={17} /> : <Eye size={17} />}</button></div>
+              {errors.password && <p id="password-error" className="field-error">{errors.password.message}</p>}
               <label className="check-row"><input type="checkbox" {...register("remember")} /> Keep me signed in <span>(remember me)</span></label>
               {error && <div role="alert" className="alert">{error}</div>}
-              <button className="button primary wide" disabled={busy}>{busy ? "One moment..." : tab === "create" ? "Create account" : "Sign in"} <ArrowRight size={17} /></button>
+              <button className="button primary wide" disabled={busy}>{busy ? <><span className="button-spinner" aria-hidden="true" /> One moment...</> : <>{tab === "create" ? "Create account" : "Sign in"} <ArrowRight size={17} /></>}</button>
             </form>
             <div className="divider"><span>or explore first</span></div>
             <button type="button" className="button secondary wide" disabled={busy} onClick={() => enter("demo", "demo", true)}>Continue with demo account <ArrowRight size={17} /></button>
@@ -91,7 +90,7 @@ export function AuthScreen({ dark, toggleTheme, onSignIn }: { dark: boolean; tog
           </>}
           {tab === "forgot" && <div className="forgot-box"><div className="notice"><LockKeyhole size={18} /><div><strong>Prototype / local-only</strong><p>Passwords stay in this browser and cannot be recovered by email. You can create a new local account or use the demo account (demo / demo).</p></div></div><button className="button secondary wide" onClick={() => { setMessage("No recovery email was sent. This is a local-only prototype."); }}>Simulate recovery request</button>{message && <p role="status" className="success-message">{message}</p>}<button className="text-button back-link" onClick={() => switchTab("signin")}>← Back to sign in</button></div>}
           <div className="auth-disclaimer"><LockKeyhole size={15} /><span>Local browser prototype. No bank connections or production security.</span></div>
-        </motion.div>
+        </div>
         <div className="auth-footnote">Made for a more mindful relationship with money.</div>
       </section>
     </div>
