@@ -92,6 +92,16 @@ export const storage = {
   saveActivity: (event: ActivityEvent) => write("activity", event),
   transactions: async (userId: string) => (await all<Transaction>("transactions")).filter((item) => item.userId === userId),
   saveTransaction: (item: Transaction) => write("transactions", item),
+  addTransactions: async (items: Transaction[]) => {
+    const db = await openDatabase();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction("transactions", "readwrite");
+      for (const item of items) tx.objectStore("transactions").add(item);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error ?? new Error("Could not import transactions."));
+      tx.onabort = () => reject(tx.error ?? new Error("Transaction import was aborted."));
+    });
+  },
   deleteTransaction: (id: string) => write("transactions", id, true),
   goals: async (userId: string) => (await all<Goal>("goals")).filter((item) => item.userId === userId),
   saveGoal: (item: Goal) => write("goals", item),
@@ -120,9 +130,14 @@ const accountSchema = z.discriminatedUnion("type", [
 const transactionSchema = z.object({
   id: z.string().min(1), userId: z.string(), description: z.string().min(1), category: z.string(),
   type: z.enum(["income", "expense", "transfer", "payment"]), amount: money.nonnegative(),
-  date: z.iso.date(), accountId: z.string().optional(),
+  date: z.iso.date(), accountId: z.string().optional(), notes: z.string().optional(),
+  recurring: z.boolean().optional(), status: z.enum(["pending", "posted"]).optional(),
 });
-const goalSchema = z.object({ id: z.string().min(1), userId: z.string(), name: z.string().min(1), current: money.nonnegative(), target: money.positive() });
+const goalSchema = z.object({
+  id: z.string().min(1), userId: z.string(), name: z.string().min(1), current: money.nonnegative(), target: money.positive(),
+  description: z.string().optional(), targetDate: z.iso.date().optional(), category: z.string().optional(),
+  monthlyTarget: money.nonnegative().optional(), paused: z.boolean().optional(),
+});
 const backupSchema = z.object({ version: z.literal(1), accounts: z.array(accountSchema), transactions: z.array(transactionSchema), goals: z.array(goalSchema) });
 
 export async function exportBackup(userId: string) {

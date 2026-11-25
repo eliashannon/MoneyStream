@@ -56,6 +56,9 @@ export interface Transaction {
   amount: number;
   date: string;
   accountId?: string;
+  notes?: string;
+  recurring?: boolean;
+  status?: "pending" | "posted";
 }
 
 export interface Goal {
@@ -64,4 +67,9 @@ export interface Goal {
   name: string;
   current: number;
   target: number;
+  description?: string;
+  targetDate?: string;
+  category?: string;
+  monthlyTarget?: number;
+  paused?: boolean;
 }

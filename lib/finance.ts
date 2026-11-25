@@ -1,4 +1,4 @@
-import type { Account, CreditCardAccount, Transaction } from "./types";
+import type { Account, CreditCardAccount, Goal, Transaction } from "./types";
 
 export const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
 
@@ -15,6 +15,19 @@ export function netPosition(accounts: Account[]): number {
   return accounts.filter((account) => account.includeInNetWorth !== false).reduce(
     (total, account) => total + (account.type === "credit" || account.type === "loan" ? -account.balance : account.balance), 0,
   );
+}
+
+export function accountOverview(accounts: Account[]) {
+  const total = (type: Account["type"]) => accounts.filter((account) => account.type === type).reduce((sum, account) => sum + account.balance, 0);
+  return { checking: total("checking"), savings: total("savings"), credit: total("credit"), netPosition: netPosition(accounts) };
+}
+
+export function goalOverview(goals: Goal[]) {
+  return goals.reduce((totals, goal) => ({
+    current: totals.current + goal.current,
+    target: totals.target + goal.target,
+    completed: totals.completed + (goal.current >= goal.target ? 1 : 0),
+  }), { current: 0, target: 0, completed: 0 });
 }
 
 export function cashFlow(transactions: Transaction[], months: number, now = new Date()) {
