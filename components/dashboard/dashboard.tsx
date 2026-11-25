@@ -35,6 +35,8 @@ export function Dashboard({ session, dark, toggleTheme, onSignOut }: { session: 
   const [active, setActive] = useState("overview");
   const [profile, setProfile] = useState(false);
   const [notifications, setNotifications] = useState(false);
+  const [workflowRuns, setWorkflowRuns] = useState<{ completed: number; latest: string; status: string } | null>(null);
+  const [workflowLoading, setWorkflowLoading] = useState(true);
 
   const refresh = useCallback(async () => {
     const [nextAccounts, nextTransactions, nextGoals] = await Promise.all([storage.accounts(session.userId), storage.transactions(session.userId), storage.goals(session.userId)]);
@@ -47,6 +49,39 @@ export function Dashboard({ session, dark, toggleTheme, onSignOut }: { session: 
       .catch(() => setError("Could not load local data. Check your browser storage settings."))
       .finally(() => setLoading(false));
   }, [session.userId]);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadWorkflowRuns() {
+      try {
+        const response = await fetch("https://api.github.com/repos/eliashannon/MoneyStream/actions/runs?status=completed&per_page=1", {
+          headers: { Accept: "application/vnd.github+json" },
+        });
+        if (!response.ok) throw new Error("Could not load workflow runs");
+        const data = await response.json();
+        const latest = data.workflow_runs?.[0];
+        if (active) {
+          setWorkflowRuns({
+            completed: data.total_count ?? 0,
+            latest: latest?.name ?? "No workflow runs",
+            status: latest?.conclusion ?? "unknown",
+          });
+        }
+      } catch {
+        if (active) setWorkflowRuns(null);
+      } finally {
+        if (active) setWorkflowLoading(false);
+      }
+    }
+
+    void loadWorkflowRuns();
+    const interval = window.setInterval(() => void loadWorkflowRuns(), 60_000);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+    };
+  }, []);
 
   async function saveAccount(account: Account) {
     await storage.saveAccount(account);
@@ -148,7 +183,7 @@ export function Dashboard({ session, dark, toggleTheme, onSignOut }: { session: 
           <section className="finance-panel insight"><TrendingUp size={24} /><h2>Your cash flow</h2><p>{change >= 0 ? "Net cash flow is up" : "Net cash flow is down"} {currency.format(Math.abs(change))} compared with last month.</p><a className="button primary small" href="#analytics" onClick={() => setActive("analytics")}>View Details →</a></section>
         </div>
         <section className="finance-panel full-section" id="transactions"><div className="finance-panel-head"><h2><ArrowLeftRight size={20} /> Transactions</h2><button className="button primary small" onClick={() => setEditor({ kind: "transaction" })}><Plus size={16} /> Add transaction</button></div><div className="transaction-controls"><label>Type <select className="input" value={filter} onChange={(event) => setFilter(event.target.value)}><option value="all">All</option><option value="income">Income</option><option value="expense">Expense</option><option value="transfer">Transfer</option><option value="payment">Credit card payment</option></select></label><label>Sort <select className="input" value={sort} onChange={(event) => setSort(event.target.value)}><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="amount">Amount</option></select></label></div>{filtered.length ? filtered.map((item) => <TransactionRow key={item.id} item={item} onEdit={() => setEditor({ kind: "transaction", value: item })} onDelete={() => remove("transaction", item.id, item.description)} />) : <p className="finance-muted">No matching transactions.</p>}</section>
-        <section className="finance-panel full-section" id="settings"><div className="finance-panel-head"><h2><Settings size={20} /> Settings &amp; local data</h2></div><p className="finance-muted">Local profile: {session.username}. This prototype stores data in your browser without encryption. Do not enter bank credentials or sensitive financial information. Backups contain financial data in plain text.</p><div className="settings-actions"><button className="button secondary" onClick={download}>Export backup</button><label className="button secondary">Import backup<input className="sr-only" type="file" accept="application/json,.json" onChange={(event) => { void upload(event.target.files?.[0]); event.target.value = ""; }} /></label><button className="button secondary" onClick={erase}>Erase local financial data</button><button className="button secondary" onClick={eraseAll}>Erase all local data</button><button className="button secondary" onClick={onSignOut}>Sign out</button></div></section>
+        <section className="finance-panel full-section" id="settings"><div className="finance-panel-head"><h2><Settings size={20} /> Settings &amp; local data</h2></div><p className="finance-muted">Local profile: {session.username}. This prototype stores data in your browser without encryption. Do not enter bank credentials or sensitive financial information. Backups contain financial data in plain text.</p><div className="workflow-tracker" role="status" aria-live="polite"><div className="workflow-tracker-title"><span className="workflow-tracker-icon"><BarChart3 size={19} /></span><div><strong>Workflow activity</strong><small>GitHub Actions · read-only</small></div></div><div className="workflow-tracker-count"><strong>{workflowLoading ? "—" : workflowRuns?.completed ?? "Unavailable"}</strong><span>completed runs</span></div><div className="workflow-tracker-latest"><span className={`workflow-status-dot ${workflowRuns?.status ?? ""}`} /><div><small>Latest result</small><strong>{workflowLoading ? "Checking GitHub…" : workflowRuns ? `${workflowRuns.latest} · ${workflowRuns.status}` : "Could not load workflow status"}</strong></div></div></div><div className="settings-actions"><button className="button secondary" onClick={download}>Export backup</button><label className="button secondary">Import backup<input className="sr-only" type="file" accept="application/json,.json" onChange={(event) => { void upload(event.target.files?.[0]); event.target.value = ""; }} /></label><button className="button secondary" onClick={erase}>Erase local financial data</button><button className="button secondary" onClick={eraseAll}>Erase all local data</button><button className="button secondary" onClick={onSignOut}>Sign out</button></div></section>
       </main>
     </div>
     <nav className="mobile-nav finance-mobile-nav" aria-label="Mobile navigation">{nav.map(({ id, label, icon: Icon }) => <a key={id} href={`#${id}`} onClick={() => setActive(id)}><Icon size={18} />{label}</a>)}</nav>
