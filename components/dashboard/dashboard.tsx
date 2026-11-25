@@ -50,6 +50,7 @@ export function Dashboard({ session, dark, toggleTheme, onSignOut }: { session: 
   const [search, setSearch] = useState("");
   const hash = useSyncExternalStore(subscribeToHash, () => window.location.hash, () => "");
   const active = nav.some((item) => `#${item.id}` === hash) ? hash.slice(1) : "overview";
+  const activeIndex = nav.findIndex((item) => item.id === active);
   const [profile, setProfile] = useState(false);
   const [notifications, setNotifications] = useState(false);
   const [balanceVisible, setBalanceVisible] = useState(true);
@@ -167,7 +168,10 @@ export function Dashboard({ session, dark, toggleTheme, onSignOut }: { session: 
   return <div className="app-shell finance-shell">
     <aside className="sidebar">
       <a className="finance-brand" href="#overview"><BrandLogo /></a>
-      <nav className="side-nav finance-nav" aria-label="Main navigation">{nav.map(({ id, label, icon: Icon }) => <a key={id} href={`#${id}`} aria-current={active === id ? "page" : undefined} className={active === id ? "selected" : ""}><Icon size={19} />{label}</a>)}</nav>
+      <nav className="side-nav finance-nav" aria-label="Main navigation">
+        <span className="finance-nav-indicator" aria-hidden="true" style={{ transform: `translateY(${activeIndex * 52}px)` }} />
+        {nav.map(({ id, label, icon: Icon }) => <a key={id} href={`#${id}`} aria-current={active === id ? "page" : undefined} className={active === id ? "selected" : ""}><Icon size={19} />{label}</a>)}
+      </nav>
       <div className="sidebar-bottom"><div className="goal-promo"><TrendingUp size={25} /><strong>Reach your goals faster with MoneyStream</strong><button className="button secondary small" onClick={() => setEditor({ kind: "goal" })}>Set a Goal →</button></div><button className="theme-toggle" onClick={toggleTheme}>{dark ? <Sun size={18} /> : <Moon size={18} />}{dark ? "Light mode" : "Dark mode"}</button></div>
     </aside>
     <div className="main-wrap">
