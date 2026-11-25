@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Area, AreaChart, ResponsiveContainer, Tooltip } from "recharts";
+import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 import { ArrowDownLeft, ArrowRight, ArrowUpRight, BarChart3, Check, ChevronDown, CreditCard, Landmark, LayoutGrid, LogOut, Moon, MoreHorizontal, Plus, Search, ShieldCheck, Sparkles, Sun, Wallet, X } from "lucide-react";
 import { AccountModal } from "@/components/accounts/account-modal";
 import { storage } from "@/lib/storage";
@@ -67,7 +67,7 @@ export function Dashboard({ session, dark, toggleTheme, onSignOut }: { session: 
     const term = search.trim().toLowerCase();
     return matchesType && (!term || `${a.name} ${a.institution}`.toLowerCase().includes(term));
   }).sort((a, b) => sort === "name" ? a.name.localeCompare(b.name) : sort === "balance" ? b.balance - a.balance : b.createdAt.localeCompare(a.createdAt)), [accounts, filter, search, sort]);
-  const chartData = [{ name: "Cash", value: cash }, { name: "Debt", value: debt }, { name: "Net", value: Math.max(cash - debt, 0) }];
+  const chartData = [{ name: "Cash", value: cash }, { name: "Debt", value: debt }];
 
   return <div className="app-shell">
     <aside className="sidebar">
@@ -95,7 +95,7 @@ export function Dashboard({ session, dark, toggleTheme, onSignOut }: { session: 
               <div className="account-list">{visible.map((account) => <AccountCard key={account.id} account={account} onEdit={() => setEditing(account)} onDelete={() => deleteAccount(account)} />)}</div>}
           </section>
           <aside className="insights-column">
-            <section className="panel snapshot"><div className="panel-title"><div><div className="form-kicker">AT A GLANCE</div><h2>Money snapshot</h2></div><span className="panel-icon"><BarChart3 size={17} /></span></div><p>A simple view of where things stand.</p><div className="chart-wrap"><ResponsiveContainer width="100%" height="100%"><AreaChart data={chartData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}><defs><linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#50bda5" stopOpacity={0.3} /><stop offset="100%" stopColor="#50bda5" stopOpacity={0} /></linearGradient></defs><Tooltip formatter={(value) => currency.format(Number(value))} contentStyle={{ borderRadius: 12, border: "1px solid #e3ebe9", color: "#152b35" }} /><Area type="monotone" dataKey="value" stroke="#38a990" strokeWidth={3} fill="url(#chartFill)" /></AreaChart></ResponsiveContainer></div><div className="snapshot-row"><span><i className="legend cash" /> Total cash</span><strong>{currency.format(cash)}</strong></div><div className="snapshot-row"><span><i className="legend debt" /> Credit balances</span><strong>{currency.format(debt)}</strong></div><div className="snapshot-foot">A snapshot based on your manually entered balances.</div></section>
+            <section className="panel snapshot"><div className="panel-title"><div><div className="form-kicker">AT A GLANCE</div><h2>Money snapshot</h2></div><span className="panel-icon"><BarChart3 size={17} /></span></div><p>A simple view of where things stand.</p><div className="chart-wrap"><ResponsiveContainer width="100%" height="100%"><BarChart data={chartData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}><XAxis dataKey="name" tick={{ fontSize: 10, fill: "#82928f" }} axisLine={false} tickLine={false} /><Tooltip formatter={(value) => currency.format(Number(value))} contentStyle={{ borderRadius: 12, border: "1px solid #e3ebe9", color: "#152b35" }} /><Bar dataKey="value" radius={[5, 5, 0, 0]} maxBarSize={54}><Cell fill="#55b69b" /><Cell fill="#8d8ab8" /></Bar></BarChart></ResponsiveContainer></div><div className="snapshot-row"><span><i className="legend cash" /> Total cash</span><strong>{currency.format(cash)}</strong></div><div className="snapshot-row"><span><i className="legend debt" /> Credit balances</span><strong>{currency.format(debt)}</strong></div><div className="snapshot-foot">A snapshot based on your manually entered balances.</div></section>
             <section className="panel activity" id="activity"><div className="panel-title"><div><div className="form-kicker">YOUR WORKSPACE</div><h2>Recent activity</h2></div><span className="panel-icon"><MoreHorizontal size={19} /></span></div><p>The latest from your local workspace.</p><div className="activity-list">{activity.length ? activity.slice(0, 5).map((event) => <div className="activity-item" key={event.id}><span className="activity-icon"><Check size={14} /></span><div><strong>{event.action}</strong><small>{event.detail}</small></div><time>{new Date(event.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</time></div>) : <div className="activity-empty">Your activity will appear here as you go.</div>}</div></section>
             <div className="privacy-note"><ShieldCheck size={18} /><span><strong>Just for you.</strong> Your data stays in this browser.</span></div>
           </aside>

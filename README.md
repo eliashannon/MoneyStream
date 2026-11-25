@@ -21,7 +21,7 @@ Other commands: `npm run lint`, `npm run build`, and `npm start` (after building
 
 **This is not secure authentication.** `lib/auth.ts` stores prototype passwords in plain text in IndexedDB and uses a client-controlled session hint. Anyone with access to the browser can read or alter them. Password recovery is simulated, and social and passkey options are disabled. Do not enter real credentials or sensitive financial data.
 
-For a future backend, replace the `lib/storage.ts` repository with a server-backed implementation and replace `lib/auth.ts` and the client-side session gate in `app/page.tsx` with real server-side authentication and authorization. The current gate is a UI convenience, not a security boundary.
+For a future backend, replace the `lib/storage.ts` repository with a server-backed implementation and replace `lib/auth.ts` and the client-side session state in `lib/client-state.tsx` and gate in `app/page.tsx` with real server-side authentication and authorization. The current gate is a UI convenience, not a security boundary.
 
 ## Structure
 
