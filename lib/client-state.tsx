@@ -25,7 +25,7 @@ export function ClientStateProvider({ children }: { children: React.ReactNode })
     const isDark = saved === "dark";
     document.documentElement.classList.toggle("dark", isDark);
     if (process.env.NODE_ENV === "production" && "serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js").catch((error) => console.error("Offline support could not be enabled:", error));
+      navigator.serviceWorker.register("/MoneyStream/sw.js", { scope: "/MoneyStream/" }).catch((error) => console.error("Offline support could not be enabled:", error));
     }
     restoreSession().then((restored) => { setDark(isDark); setSession(restored); }).catch(() => { setDark(isDark); setSession(null); }).finally(() => setReady(true));
   }, []);
