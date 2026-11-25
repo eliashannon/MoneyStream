@@ -28,6 +28,8 @@ Goals can include a description, category, target date and monthly contribution 
 
 The sidebar opens separate dashboard, transactions, accounts, goals, analytics, and settings views. Analytics summarizes recent calendar months of transactions; current net position uses the same account balances as the dashboard. Light and dark themes can be changed in Settings and are applied immediately.
 
+On phones and tablets, use the bottom navigation to switch views. Transaction search and history remain available from the header and dashboard. The dashboard's mobile net-position card can hide or show its displayed amount.
+
 In production, a service worker caches the application shell for offline use after an initial successful online visit on HTTPS or localhost. Browser storage or cached files can be evicted or cleared, so keep backups. Development mode does not enable offline caching.
 
 **This is not secure authentication or encrypted storage.** Prototype passwords are stored in plain text in IndexedDB, and browser-controlled session hints are not an authorization boundary. Backups are plain-text files containing financial data. Do not enter real credentials or sensitive financial information. Future server-backed authentication and a repository implementation should replace the local prototype before handling sensitive data.
