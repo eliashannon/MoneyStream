@@ -7,6 +7,7 @@ import { z } from "zod";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowDownLeft, ArrowRight, ArrowUpRight, Check, Eye, EyeOff, Fingerprint, LockKeyhole, Moon, Sparkles, Sun } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
 import { createUser, signIn } from "@/lib/auth";
 import { storage } from "@/lib/storage";
 import { Session } from "@/lib/types";
@@ -45,7 +46,7 @@ export function AuthScreen({ dark, toggleTheme, onSignIn }: { dark: boolean; tog
   function switchTab(next: typeof tab) { setTab(next); setError(""); setMessage(""); }
 
   return <main className="auth-page">
-    <div className="auth-top"><Link className="brand" href="/"><span className="brand-mark">m</span><span>money<span className="brand-light">stream</span></span></Link><button className="icon-button" onClick={toggleTheme} aria-label={`Switch to ${dark ? "light" : "dark"} mode`}>{dark ? <Sun size={18} /> : <Moon size={18} />}</button></div>
+    <div className="auth-top"><Link className="finance-brand" href="/"><BrandLogo /></Link><button className="icon-button" onClick={toggleTheme} aria-label={`Switch to ${dark ? "light" : "dark"} mode`}>{dark ? <Sun size={18} /> : <Moon size={18} />}</button></div>
     <div className="auth-layout">
       <section className="auth-story">
         <div className="story-glow" />

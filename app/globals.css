@@ -30,8 +30,6 @@ button:disabled { cursor: not-allowed; }
 a { color: inherit; text-decoration: none; }
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid #64cdb4; outline-offset: 3px; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-.brand { display: inline-flex; align-items: center; gap: 10px; font-size: 21px; letter-spacing: -.9px; font-weight: 800; }
-.brand-light { font-weight: 400; }
 .brand-mark { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; background: #256c5d; color: white; font-family: Georgia, serif; font-weight: 700; font-size: 24px; line-height: 1; padding-bottom: 5px; }
 .icon-button { border: 0; background: transparent; color: var(--text); width: 38px; height: 38px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; }
 .icon-button:hover { background: var(--surface-alt); }
@@ -101,8 +99,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 /* Finance workspace */
 .finance-shell { --background: #f7faf8; --surface: #fff; --surface-alt: #f0faf3; --text: #111827; --muted: #64748b; --border: #e5eae7; --accent: #075e38; background: var(--background); color: var(--text); }
 .dark .finance-shell { --background: #111d20; --surface: #19292c; --surface-alt: #203236; --text: #e5f1ed; --muted: #9cadaa; --border: #304346; --accent: #70d4bb; }
-.finance-brand { display: flex; align-items: center; gap: 7px; color: var(--text); font-size: 21px; font-weight: 700; letter-spacing: -.8px; white-space: nowrap; }
-.finance-brand svg, .finance-brand b { color: var(--accent); }
+.finance-brand { display: flex; align-items: center; gap: 3px; }
+.finance-logo-symbol { display: block; width: 46px; height: auto; }
+.finance-logo-wordmark { display: block; width: 117px; height: auto; }
+.dark .finance-logo-wordmark { filter: brightness(0) invert(1); }
 .finance-nav { margin-top: 55px; gap: 6px; }
 .finance-nav a { color: var(--text); font-size: 14px; font-weight: 500; }
 .finance-nav a:hover { background: var(--surface-alt); color: var(--accent); }
@@ -170,7 +170,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .finance-mobile-nav a[aria-current="page"] svg { background: var(--surface-alt); border-radius: 8px; box-sizing: content-box; padding: 3px 8px; margin: -3px -8px; }
   .finance-content { padding-bottom: calc(90px + env(safe-area-inset-bottom)); }
   .finance-topbar { height: calc(70px + env(safe-area-inset-top)); padding-top: env(safe-area-inset-top); }
-  .finance-topbar .mobile-brand { display: inline-flex; gap: 7px; align-items: center; font-size: 18px; }
+  .finance-topbar .mobile-brand { display: inline-flex; align-items: center; }
   .finance-topbar .local-pill { display: none; }
   .finance-topbar .header-search { width: min(360px, 45%); }
 }
@@ -179,7 +179,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .auth-page { padding-top: max(20px, env(safe-area-inset-top)); padding-left: max(20px, env(safe-area-inset-left)); padding-right: max(20px, env(safe-area-inset-right)); padding-bottom: max(20px, env(safe-area-inset-bottom)); }
   .finance-topbar { height: calc(60px + env(safe-area-inset-top)); padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); gap: 8px; }
   .finance-topbar .header-search, .finance-topbar .local-pill { display: none; }
-  .finance-topbar .mobile-brand { display: inline-flex; gap: 7px; align-items: center; min-width: 0; font-size: 18px; }
+  .finance-topbar .mobile-brand { display: inline-flex; align-items: center; min-width: 0; }
+  .mobile-brand .finance-logo-symbol { width: 38px; }
+  .mobile-brand .finance-logo-wordmark { width: 97px; }
   .finance-topbar .mobile-search { display: inline-flex; }
   .finance-topbar .topbar-actions { gap: 0; flex: none; }
   .finance-topbar .icon-button, .finance-topbar .finance-avatar { width: 44px; height: 44px; }

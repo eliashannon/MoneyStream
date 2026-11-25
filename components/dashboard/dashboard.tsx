@@ -5,6 +5,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { ArrowLeftRight, BarChart3, Bell, ChevronRight, CircleUserRound, CreditCard, Eye, EyeOff, Home, House, Landmark, LogOut, Moon, PiggyBank, Search, Settings, Shield, Sun, Target, Trees, TrendingUp, Wallet, X } from "lucide-react";
 import { AccountModal } from "@/components/accounts/account-modal";
 import { AccountsWorkspace } from "@/components/accounts/accounts-workspace";
+import { BrandLogo } from "@/components/brand-logo";
 import { RecordModal } from "./record-modal";
 import { Transactions } from "./transactions";
 import { GoalsWorkspace } from "./goals-workspace";
@@ -164,13 +165,13 @@ export function Dashboard({ session, dark, toggleTheme, onSignOut }: { session: 
 
   return <div className="app-shell finance-shell">
     <aside className="sidebar">
-      <a className="finance-brand" href="#overview"><TrendingUp size={28} /><span><b>Money</b>Stream</span></a>
+      <a className="finance-brand" href="#overview"><BrandLogo /></a>
       <nav className="side-nav finance-nav" aria-label="Main navigation">{nav.map(({ id, label, icon: Icon }) => <a key={id} href={`#${id}`} aria-current={active === id ? "page" : undefined} className={active === id ? "selected" : ""}><Icon size={19} />{label}</a>)}</nav>
       <div className="sidebar-bottom"><div className="goal-promo"><TrendingUp size={25} /><strong>Reach your goals faster with MoneyStream</strong><button className="button secondary small" onClick={() => setEditor({ kind: "goal" })}>Set a Goal →</button></div><button className="theme-toggle" onClick={toggleTheme}>{dark ? <Sun size={18} /> : <Moon size={18} />}{dark ? "Light mode" : "Dark mode"}</button></div>
     </aside>
     <div className="main-wrap">
       <header className="topbar finance-topbar">
-        <a className="finance-brand mobile-brand" href="#overview"><TrendingUp size={23} /><span><b>Money</b>Stream</span></a>
+        <a className="finance-brand mobile-brand" href="#overview"><BrandLogo /></a>
         <form className="header-search" onSubmit={(event) => { event.preventDefault(); window.location.hash = "transactions"; }}><Search size={19} /><label className="sr-only" htmlFor="global-search">Search transactions</label><input id="global-search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search transactions..." /></form>
         <div className="topbar-actions"><a className="icon-button mobile-search" href="#transactions" aria-label="Search transactions"><Search size={20} /></a><span className="local-pill">Manual · Local only</span><div className="menu-wrap"><button className="icon-button" aria-label="Notifications" aria-expanded={notifications} onClick={() => setNotifications(!notifications)}><Bell size={20} /></button>{notifications && <div className="dropdown">No new notifications.</div>}</div><div className="menu-wrap"><button className="avatar finance-avatar" aria-label="Profile menu" aria-expanded={profile} onClick={() => setProfile(!profile)}>{session.username.slice(0, 2).toUpperCase()}</button>{profile && <div className="dropdown"><strong>{session.username}</strong><a href="#settings" onClick={() => setProfile(false)}>Profile &amp; account settings</a><button onClick={onSignOut}><LogOut size={15} /> Sign out</button></div>}</div></div>
       </header>
