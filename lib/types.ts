@@ -18,6 +18,7 @@ interface BaseAccount {
   balance: number;
   notes?: string;
   createdAt: string;
+  includeInNetWorth?: boolean;
 }
 
 export interface CreditCardAccount extends BaseAccount {
@@ -27,10 +28,13 @@ export interface CreditCardAccount extends BaseAccount {
   dueDate?: string;
   availableCredit?: number;
   color?: string;
+  paymentsTowardStatement?: number;
+  creditLimit?: number;
+  closingDate?: string;
 }
 
 export interface BankAccount extends BaseAccount {
-  type: "checking" | "savings";
+  type: "checking" | "savings" | "cash" | "investment" | "loan" | "other";
 }
 
 export type Account = CreditCardAccount | BankAccount;
@@ -41,4 +45,23 @@ export interface ActivityEvent {
   action: string;
   detail: string;
   createdAt: string;
+}
+
+export interface Transaction {
+  id: string;
+  userId: string;
+  description: string;
+  category: string;
+  type: "income" | "expense" | "transfer" | "payment";
+  amount: number;
+  date: string;
+  accountId?: string;
+}
+
+export interface Goal {
+  id: string;
+  userId: string;
+  name: string;
+  current: number;
+  target: number;
 }
