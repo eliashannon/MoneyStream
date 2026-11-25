@@ -22,8 +22,8 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (event.request.method !== "GET" || url.origin !== self.location.origin) return;
-  const navigation = event.request.mode === "navigate" && url.pathname === "/";
-  const asset = url.pathname.startsWith("/_next/static/");
+  const navigation = event.request.mode === "navigate" && (url.pathname === "/" || url.pathname === `${BASE}/`);
+  const asset = url.pathname.startsWith(`${BASE}/_next/static/`);
   if (!navigation && !asset) return;
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);

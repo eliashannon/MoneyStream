@@ -4,8 +4,6 @@ const nextConfig: NextConfig = {
   output: "export",
   basePath: "/MoneyStream",
   assetPrefix: "/MoneyStream",
-  cacheComponents: true,
-  partialPrefetching: true,
   turbopack: {
     rules: {
       "*.css": {
