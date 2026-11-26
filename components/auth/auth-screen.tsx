@@ -48,12 +48,12 @@ export function AuthScreen({ dark, toggleTheme, onSignIn }: { dark: boolean; tog
     <div className="auth-top"><Link className="finance-brand" href="/"><BrandLogo /></Link><button className="icon-button" onClick={toggleTheme} aria-label={`Switch to ${dark ? "light" : "dark"} mode`}>{dark ? <Sun size={18} /> : <Moon size={18} />}</button></div>
     <div className="auth-layout">
       <section className="auth-story">
-        <div className="story-glow" />
+        <div className="story-glow" aria-hidden="true" />
         <div className="story-content">
-          <div className="eyebrow light"><Sparkles size={14} /> A LITTLE MORE CLARITY</div>
+          <div className="eyebrow light"><Sparkles size={14} aria-hidden /> A LITTLE MORE CLARITY</div>
           <h1>Your money.<br /><span>In a better light.</span></h1>
           <p>Make room for what matters. See your accounts together and feel good about where you stand.</p>
-          <div className="preview-card">
+          <div className="preview-card" aria-hidden="true">
             <div className="preview-head"><span>YOUR OVERVIEW</span><span className="preview-dot">● &nbsp; ALL ACCOUNTS</span></div>
             <div className="preview-label">Net position</div><div className="preview-amount">$21,474<span>.95</span></div>
             <div className="preview-bars"><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /></div>
@@ -88,7 +88,7 @@ export function AuthScreen({ dark, toggleTheme, onSignIn }: { dark: boolean; tog
             <button type="button" className="button secondary wide" disabled={busy} onClick={() => enter("demo", "demo", true)}>Continue with demo account <ArrowRight size={17} /></button>
             <div className="coming-soon"><button disabled><Fingerprint size={16} /> Passkey <span>coming soon</span></button><button disabled>Social sign-in <span>coming soon</span></button></div>
           </>}
-          {tab === "forgot" && <div className="forgot-box"><div className="notice"><LockKeyhole size={18} /><div><strong>Prototype / local-only</strong><p>Passwords stay in this browser and cannot be recovered by email. You can create a new local account or use the demo account (demo / demo).</p></div></div><button className="button secondary wide" onClick={() => { setMessage("No recovery email was sent. This is a local-only prototype."); }}>Simulate recovery request</button>{message && <p role="status" className="success-message">{message}</p>}<button className="text-button back-link" onClick={() => switchTab("signin")}>← Back to sign in</button></div>}
+          {tab === "forgot" && <div className="forgot-box"><div className="notice"><LockKeyhole size={18} /><div><strong>Prototype / local-only</strong><p>Passwords stay in this browser and cannot be recovered by email. You can create a new local account or use the demo account (demo / demo).</p></div></div><button className="button secondary wide" onClick={() => { setMessage("No recovery email was sent. This is a local-only prototype."); }}>Simulate recovery request</button>{message && <p role="status" className="status-message">{message}</p>}<button type="button" className="text-button back-link" onClick={() => switchTab("signin")}>← Back to sign in</button></div>}
           <div className="auth-disclaimer"><LockKeyhole size={15} /><span>Local browser prototype. No bank connections or production security.</span></div>
         </div>
         <div className="auth-footnote">Made for a more mindful relationship with money.</div>
