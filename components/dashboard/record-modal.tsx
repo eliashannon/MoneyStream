@@ -44,7 +44,7 @@ export function RecordModal({ userId, accounts, record, onClose, onSave }: Props
   }
 
   return <dialog ref={dialog} className="modal" onCancel={(event) => { event.preventDefault(); onClose(); }} aria-labelledby="record-title">
-    <div className="modal-head"><div><h2 id="record-title">{record.value ? "Edit" : "Add"} {record.kind}</h2><p className="muted">Saved locally in this browser.</p></div><button className="icon-button" onClick={onClose} aria-label="Close"><X size={20} /></button></div>
+    <div className="modal-head"><div><h2 id="record-title">{record.value ? "Edit" : "Add"} {record.kind}</h2><p className="muted">Saved locally in this browser.</p></div><button type="button" className="icon-button" onClick={onClose} aria-label="Close"><X size={20} /></button></div>
     <form onSubmit={submit}>
       <div className="form-grid">
         <div className="full"><label className="field-label" htmlFor="record-name">{record.kind === "goal" ? "Goal name" : "Description"}</label><input className="input" id="record-name" name="name" required defaultValue={record.kind === "goal" ? record.value?.name : record.value?.description} /></div>
@@ -64,7 +64,7 @@ export function RecordModal({ userId, accounts, record, onClose, onSave }: Props
           <div><label className="field-label" htmlFor="record-status">Status</label><select className="input" id="record-status" name="status" defaultValue={record.value ? record.value.status ?? "" : "posted"}><option value="">Not recorded</option><option value="posted">Posted</option><option value="pending">Pending</option></select></div>
           <label className="check-row"><input type="checkbox" name="recurring" defaultChecked={record.value?.recurring} /> Recurring transaction</label>
           <div className="full"><label className="field-label" htmlFor="record-notes">Notes <span>optional</span></label><textarea className="input textarea" id="record-notes" name="notes" defaultValue={record.value?.notes} /></div>
-          <p className="muted full">Transactions do not automatically change manually entered account balances.</p>
+          <p className="form-note full">Transactions do not automatically change manually entered account balances.</p>
         </>}
       </div>
       {error && <div role="alert" className="alert">{error}</div>}
