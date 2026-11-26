@@ -10,11 +10,12 @@ import { BrandLogo } from "@/components/brand-logo";
 import { RecordModal } from "./record-modal";
 import { Transactions } from "./transactions";
 import { GoalsWorkspace } from "./goals-workspace";
-import { AnalyticsWorkspace } from "./analytics-workspace";
+import { AnalyticsWorkspace } from "@/components/analytics/analytics-workspace";
+import { clearSavedLayouts } from "@/lib/analytics-layout";
 import { ChartTooltip } from "./chart-tooltip";
 import { availableCredit, cashFlow, creditUtilization, currency, netPosition } from "@/lib/finance";
 import { exportBackup, replaceFinancialData, storage } from "@/lib/storage";
-import { Account, Goal, Session, Transaction } from "@/lib/types";
+import { Account, BalanceSnapshot, Goal, Session, Transaction } from "@/lib/types";
 
 type Editor = { kind: "goal"; value?: Goal } | { kind: "transaction"; value?: Transaction };
 const nav = [
@@ -43,6 +44,8 @@ export function Dashboard({ session, dark, toggleTheme, onSignOut }: { session: 
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
+  const [snapshots, setSnapshots] = useState<BalanceSnapshot[]>([]);
+  const [snapshotError, setSnapshotError] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [accountEditor, setAccountEditor] = useState<Account | null | undefined>();
@@ -70,17 +73,30 @@ export function Dashboard({ session, dark, toggleTheme, onSignOut }: { session: 
     return () => { document.removeEventListener("pointerdown", onPointer); document.removeEventListener("keydown", onKey); };
   }, [profile, notifications]);
 
+  // Records today's balances, then reloads the history used by the net worth chart.
+  // A failure here only affects analytics, so it never blocks the rest of the app.
+  const syncSnapshots = useCallback(async (current: Account[]) => {
+    try {
+      await storage.recordSnapshot(session.userId, current);
+      setSnapshots(await storage.snapshots(session.userId));
+      setSnapshotError("");
+    } catch {
+      setSnapshotError("Balance history could not be read from browser storage. Other charts are unaffected.");
+    }
+  }, [session.userId]);
+
   const refresh = useCallback(async () => {
     const [nextAccounts, nextTransactions, nextGoals] = await Promise.all([storage.accounts(session.userId), storage.transactions(session.userId), storage.goals(session.userId)]);
     setAccounts(nextAccounts); setTransactions(nextTransactions); setGoals(nextGoals);
-  }, [session.userId]);
+    await syncSnapshots(nextAccounts);
+  }, [session.userId, syncSnapshots]);
 
   useEffect(() => {
     Promise.all([storage.accounts(session.userId), storage.transactions(session.userId), storage.goals(session.userId)])
-      .then(([nextAccounts, nextTransactions, nextGoals]) => { setAccounts(nextAccounts); setTransactions(nextTransactions); setGoals(nextGoals); })
+      .then(async ([nextAccounts, nextTransactions, nextGoals]) => { setAccounts(nextAccounts); setTransactions(nextTransactions); setGoals(nextGoals); await syncSnapshots(nextAccounts); })
       .catch(() => setError("Could not load local data. Check your browser storage settings."))
       .finally(() => setLoading(false));
-  }, [session.userId]);
+  }, [session.userId, syncSnapshots]);
 
   useEffect(() => {
     let active = true;
@@ -155,7 +171,7 @@ export function Dashboard({ session, dark, toggleTheme, onSignOut }: { session: 
     } catch { setError("Could not import backup. Check that it is a valid MoneyStream backup."); }
   }
   async function erase() {
-    if (!window.confirm("Erase all accounts, transactions, goals, and activity for this local user? This cannot be undone.")) return;
+    if (!window.confirm("Erase all accounts, transactions, goals, balance history, and activity for this local user? This cannot be undone.")) return;
     try {
       await replaceFinancialData(session.userId, { version: 1, accounts: [], transactions: [], goals: [] });
       await refresh();
@@ -167,6 +183,7 @@ export function Dashboard({ session, dark, toggleTheme, onSignOut }: { session: 
       await storage.clearAll();
       if (dark) toggleTheme();
       localStorage.removeItem("moneystream-theme");
+      clearSavedLayouts();
       onSignOut();
     } catch { setError("Could not erase all local data."); }
   }
@@ -224,7 +241,7 @@ export function Dashboard({ session, dark, toggleTheme, onSignOut }: { session: 
         <div hidden={active !== "transactions"}><Transactions transactions={transactions} accounts={accounts} userId={session.userId} search={search} setSearch={setSearch} onAdd={() => setEditor({ kind: "transaction" })} onEdit={(item) => setEditor({ kind: "transaction", value: item })} onDelete={(item) => void remove("transaction", item.id, item.description)} onImport={async (items) => { await storage.addTransactions(items); try { await refresh(); } catch { setError("Transactions were imported, but the display could not be refreshed. Reload the page to see them."); } }} /></div>
         <div hidden={active !== "accounts"}><AccountsWorkspace accounts={accounts} onAdd={() => setAccountEditor(null)} onEdit={setAccountEditor} onDelete={(account) => void remove("account", account.id, account.name)} /></div>
         <div hidden={active !== "goals"}><GoalsWorkspace goals={goals} onAdd={() => setEditor({ kind: "goal" })} onEdit={(goal) => setEditor({ kind: "goal", value: goal })} onDelete={(goal) => void remove("goal", goal.id, goal.name)} /></div>
-        <div hidden={active !== "analytics"}><AnalyticsWorkspace accounts={accounts} transactions={transactions} /></div>
+        <div hidden={active !== "analytics"}><AnalyticsWorkspace userId={session.userId} accounts={accounts} transactions={transactions} snapshots={snapshots} loading={loading} snapshotError={snapshotError} /></div>
         <div hidden={active !== "settings"}>
         <section className="workspace" id="settings">
           <header className="page-head"><div><h1>Settings</h1><p>Local profile: <strong>{session.username}</strong>. Settings and records are stored in this browser.</p></div></header>
@@ -241,7 +258,7 @@ export function Dashboard({ session, dark, toggleTheme, onSignOut }: { session: 
           </section>
           <section className="settings-group wide-row" aria-labelledby="settings-data">
             <h2 id="settings-data">Data and privacy</h2>
-            <p className="finance-muted">This prototype stores data in your browser without encryption. Do not enter bank credentials or sensitive financial information. Backups contain financial data in plain text. Import replaces this profile&apos;s accounts, transactions and goals.</p>
+            <p className="finance-muted">This prototype stores data in your browser without encryption. Do not enter bank credentials or sensitive financial information. Backups contain financial data in plain text. Import replaces this profile&apos;s accounts, transactions and goals, and clears its balance history.</p>
             <div className="settings-actions"><button className="button secondary" onClick={download}><Download size={16} aria-hidden /> Export backup</button><label className="button secondary"><Upload size={16} aria-hidden /> Import backup<input className="sr-only" type="file" accept="application/json,.json" onChange={(event) => { void upload(event.target.files?.[0]); event.target.value = ""; }} /></label></div>
           </section>
           <section className="settings-group danger-zone wide-row" aria-labelledby="settings-danger">

@@ -61,6 +61,26 @@ export interface Transaction {
   status?: "pending" | "posted";
 }
 
+/** One account's balance as it was recorded in a daily snapshot. */
+export interface SnapshotAccount {
+  accountId: string;
+  name: string;
+  type: Account["type"];
+  balance: number;
+  includeInNetWorth: boolean;
+}
+
+/**
+ * The balances of all of a user's accounts on one calendar day. Recorded locally
+ * whenever accounts load or change; the last recording of a day wins.
+ */
+export interface BalanceSnapshot {
+  id: string;
+  userId: string;
+  date: string;
+  accounts: SnapshotAccount[];
+}
+
 export interface Goal {
   id: string;
   userId: string;

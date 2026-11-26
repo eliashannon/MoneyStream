@@ -1,17 +1,17 @@
 import { demoAccounts, demoActivity, demoGoals, demoTransactions, demoUser } from "./demoData";
-import { Account, ActivityEvent, Goal, Transaction, User } from "./types";
+import { Account, ActivityEvent, BalanceSnapshot, Goal, Transaction, User } from "./types";
 import { z } from "zod";
 
 // This adapter is the browser-only boundary to replace with a backend repository later.
 const DB_NAME = "moneystream";
-const STORES = ["users", "accounts", "activity", "transactions", "goals"] as const;
+const STORES = ["users", "accounts", "activity", "transactions", "goals", "balanceSnapshots"] as const;
 type Store = (typeof STORES)[number];
 let opening: Promise<IDBDatabase> | undefined;
 
 function openDatabase(): Promise<IDBDatabase> {
   if (!opening) {
     opening = new Promise<IDBDatabase>((resolve, reject) => {
-      const request = indexedDB.open(DB_NAME, 2);
+      const request = indexedDB.open(DB_NAME, 3);
       request.onupgradeneeded = (event) => {
         const db = request.result;
         for (const name of STORES) if (!db.objectStoreNames.contains(name)) db.createObjectStore(name, { keyPath: "id" });
@@ -21,8 +21,12 @@ function openDatabase(): Promise<IDBDatabase> {
           demoAccounts.forEach((account) => tx.objectStore("accounts").add(account));
           demoActivity.forEach((event) => tx.objectStore("activity").add(event));
         }
-        demoTransactions.forEach((item) => tx.objectStore("transactions").add(item));
-        demoGoals.forEach((item) => tx.objectStore("goals").add(item));
+        // Demo transactions and goals arrived with version 2. Adding them again on a
+        // later upgrade would hit existing keys and abort the whole upgrade.
+        if (event.oldVersion < 2) {
+          demoTransactions.forEach((item) => tx.objectStore("transactions").add(item));
+          demoGoals.forEach((item) => tx.objectStore("goals").add(item));
+        }
       };
       request.onsuccess = () => {
         request.result.onversionchange = () => { request.result.close(); opening = undefined; };
@@ -106,6 +110,12 @@ export const storage = {
   goals: async (userId: string) => (await all<Goal>("goals")).filter((item) => item.userId === userId),
   saveGoal: (item: Goal) => write("goals", item),
   deleteGoal: (id: string) => write("goals", id, true),
+  snapshots: async (userId: string) => (await all<BalanceSnapshot>("balanceSnapshots")).filter((item) => item.userId === userId).sort((a, b) => a.date.localeCompare(b.date)),
+  /** Records today's balances for every account, replacing any earlier recording from the same day. */
+  recordSnapshot: (userId: string, accounts: Account[], date = localDate()) => write("balanceSnapshots", {
+    id: `${userId}:${date}`, userId, date,
+    accounts: accounts.map((account) => ({ accountId: account.id, name: account.name, type: account.type, balance: account.balance, includeInNetWorth: account.includeInNetWorth !== false })),
+  } satisfies BalanceSnapshot),
   clearAll: async () => {
     const db = await openDatabase();
     await new Promise<void>((resolve, reject) => {
@@ -117,6 +127,10 @@ export const storage = {
     });
   },
 };
+
+function localDate(now = new Date()) {
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+}
 
 const money = z.number().finite();
 const baseAccount = z.object({
@@ -159,13 +173,14 @@ export async function replaceFinancialData(userId: string, input: unknown) {
   };
   const db = await openDatabase();
   await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(["accounts", "transactions", "goals", "activity"], "readwrite");
-    for (const name of ["accounts", "transactions", "goals", "activity"] as const) {
+    // Balance history describes the records being replaced, so it is cleared with them.
+    const tx = db.transaction(["accounts", "transactions", "goals", "activity", "balanceSnapshots"], "readwrite");
+    for (const name of ["accounts", "transactions", "goals", "activity", "balanceSnapshots"] as const) {
       const store = tx.objectStore(name);
       const request = store.getAll();
       request.onsuccess = () => {
         for (const item of request.result as { id: string; userId: string }[]) if (item.userId === userId) store.delete(item.id);
-        if (name !== "activity") for (const item of records[name]) store.put(item);
+        if (name !== "activity" && name !== "balanceSnapshots") for (const item of records[name]) store.put(item);
       };
     }
     tx.oncomplete = () => resolve();
